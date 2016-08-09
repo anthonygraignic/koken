@@ -40,7 +40,7 @@ webrootdir="/home/user/koken.yourdomain.com" # (e.g.: webrootdir=/home/user/publ
 
 # Default TAR Output File Base Name
 tarnamebase="kokensitebackup-"
-datestamp=`date +'%m-%d-%Y'`
+datestamp=`date +'%Y-%m-%d_%H%M'`
 
 # Execution directory (script start point)
 startdir=/home/user/backups
@@ -59,9 +59,9 @@ tempdir=$datestamp
 
 if test "$1" = ""
 then
-tarname=$tarnamebase$datestamp.tgz
+    tarname=$tarnamebase$datestamp.tgz
 else
-tarname=$1
+    tarname=$1
 fi
 
 #
@@ -74,12 +74,6 @@ echo "Beginning koken site backup using koken_backup.sh ..." > $logfile
 tempdirfull=${startdir}/${datestamp}
 echo " Creating temp working dir $tempdirfull ..." >> $logfile
 mkdir $tempdirfull
-#
-# TAR website files
-#
-echo " TARing website files into $webrootdir ..." >> $logfile
-cd $webrootdir
-tar cf $startdir/$tempdir/filecontent.tar .
 
 #
 # sqldump database information
@@ -92,8 +86,8 @@ mysqldump --host=$dbhost --user=$dbuser --password=$dbpw --add-drop-table $dbnam
 #
 # Create final backup file
 #
-echo " Creating final compressed (tgz) TAR file: $tarname ..." >> $logfile
-tar czf $startdir/$tarname filecontent.tar dbcontent.sql
+echo " Compressing database dump & webdir to $tarname ..." >> $logfile
+tar czf $startdir/$tarname dbcontent.sql $webrootdir --exclude='**/cache' --exclude='storage/tmp'
 
 #
 # Cleanup
